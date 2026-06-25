@@ -1,0 +1,6 @@
+{
+  "name": "VacancyAI",
+  "description": "An AI-powered job vacancy generator that scrapes job details from a URL and formats them into a professional listing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
