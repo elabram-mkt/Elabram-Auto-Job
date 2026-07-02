@@ -11,7 +11,11 @@ import {
   Sparkles,
   Pencil,
   Image as ImageIcon,
-  Download
+  Download,
+  ZoomIn,
+  ZoomOut,
+  Move,
+  RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
@@ -34,7 +38,28 @@ export default function App() {
   const [jobDetails, setJobDetails] = useState<JobDetails | null>(null);
   const [customEmail, setCustomEmail] = useState('recruitment@elabram.com');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [scale, setScale] = useState(1);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
   const posterRef = useRef<HTMLDivElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setLogoUrl(event.target.result as string);
+          setScale(1);
+          setOffsetX(0);
+          setOffsetY(0);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,6 +220,33 @@ Submit Your CV and Resume to ${customEmail}
             >
               {/* Controls */}
               <div className="flex flex-col sm:flex-row justify-end gap-3 px-2">
+                <input 
+                  type="file"
+                  ref={logoInputRef}
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => logoInputRef.current?.click()}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm"
+                >
+                  <ImageIcon className="mr-2 h-4 w-4 text-slate-400" />
+                  Upload Image
+                </button>
+                {logoUrl && (
+                  <button
+                    onClick={() => {
+                      setLogoUrl(null);
+                      setScale(1);
+                      setOffsetX(0);
+                      setOffsetY(0);
+                    }}
+                    className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-rose-700 bg-white border border-rose-200 hover:bg-rose-50 hover:text-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition shadow-sm"
+                  >
+                    Remove Logo
+                  </button>
+                )}
                 <button
                   onClick={copyToClipboard}
                   className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm"
@@ -230,6 +282,155 @@ Submit Your CV and Resume to ${customEmail}
                 </button>
               </div>
 
+              {/* Image Adjustment Panel */}
+              {logoUrl && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="bg-indigo-50 p-2 rounded-xl text-indigo-600">
+                        <Move className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-800 text-sm">Adjust Uploaded Image</h4>
+                        <p className="text-xs text-slate-500">Fine-tune your image position and scale inside the circular design frame</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setScale(1);
+                        setOffsetX(0);
+                        setOffsetY(0);
+                      }}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors self-start sm:self-auto"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Reset Position
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-1">
+                    {/* Size Control */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                          <ZoomIn className="w-3.5 h-3.5 text-slate-400" />
+                          Size / Zoom
+                        </span>
+                        <span className="text-xs font-mono text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                          {Math.round(scale * 100)}%
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setScale(s => Math.max(0.1, Number((s - 0.1).toFixed(2))))}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition text-sm font-semibold shadow-sm"
+                          title="Zoom Out"
+                        >
+                          -
+                        </button>
+                        <input 
+                          type="range" 
+                          min="0.1" 
+                          max="3" 
+                          step="0.05"
+                          value={scale} 
+                          onChange={(e) => setScale(parseFloat(e.target.value))} 
+                          className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 border border-slate-200 focus:outline-none"
+                        />
+                        <button 
+                          onClick={() => setScale(s => Math.min(3, Number((s + 0.1).toFixed(2))))}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition text-sm font-semibold shadow-sm"
+                          title="Zoom In"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Horizontal Move Control */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                          <Move className="w-3.5 h-3.5 text-slate-400" />
+                          Horizontal Position
+                        </span>
+                        <span className="text-xs font-mono text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                          {offsetX}px
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setOffsetX(x => Math.max(-150, x - 5))}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition text-sm font-semibold shadow-sm"
+                          title="Move Left"
+                        >
+                          ←
+                        </button>
+                        <input 
+                          type="range" 
+                          min="-150" 
+                          max="150" 
+                          step="1"
+                          value={offsetX} 
+                          onChange={(e) => setOffsetX(parseInt(e.target.value))} 
+                          className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 border border-slate-200 focus:outline-none"
+                        />
+                        <button 
+                          onClick={() => setOffsetX(x => Math.min(150, x + 5))}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition text-sm font-semibold shadow-sm"
+                          title="Move Right"
+                        >
+                          →
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Vertical Move Control */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                          <Move className="w-3.5 h-3.5 text-slate-400 rotate-90" />
+                          Vertical Position
+                        </span>
+                        <span className="text-xs font-mono text-slate-500 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                          {offsetY}px
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setOffsetY(y => Math.max(-150, y - 5))}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition text-sm font-semibold shadow-sm"
+                          title="Move Up"
+                        >
+                          ↑
+                        </button>
+                        <input 
+                          type="range" 
+                          min="-150" 
+                          max="150" 
+                          step="1"
+                          value={offsetY} 
+                          onChange={(e) => setOffsetY(parseInt(e.target.value))} 
+                          className="flex-1 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600 border border-slate-200 focus:outline-none"
+                        />
+                        <button 
+                          onClick={() => setOffsetY(y => Math.min(150, y + 5))}
+                          className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition text-sm font-semibold shadow-sm"
+                          title="Move Down"
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Poster Canvas */}
               <div 
                 ref={posterRef}
@@ -243,12 +444,43 @@ Submit Your CV and Resume to ${customEmail}
                   }}
                 />
 
-                <div className="relative z-10 flex flex-col p-8 sm:px-12 pt-40 border-b border-white/10">
-                  <h3 className="text-3xl sm:text-5xl font-extrabold text-white flex items-center gap-4">
-                    <Briefcase className="w-8 h-8 sm:w-12 sm:h-12 text-orange-400" />
+                {/* Top-Left Circular Design */}
+                <div className="absolute -top-20 -left-20 w-72 h-72 sm:w-96 sm:h-96 select-none z-0 pointer-events-none">
+                  {/* Yellow crescent shape on bottom-left */}
+                  <div className="absolute inset-0 bg-[#fce01a] rounded-full transform translate-x-[-15px] translate-y-[15px] opacity-90"></div>
+                  {/* Orange crescent shape on top-right */}
+                  <div className="absolute inset-0 bg-[#f05323] rounded-full transform translate-x-[18px] translate-y-[-18px] opacity-95"></div>
+                  {/* Main White Circle */}
+                  <div 
+                    onClick={() => logoInputRef.current?.click()}
+                    className="absolute inset-[10px] bg-white rounded-full flex items-center justify-center shadow-lg pointer-events-auto cursor-pointer group overflow-hidden"
+                    title="Click to upload image"
+                  >
+                    {logoUrl ? (
+                      <img 
+                        src={logoUrl} 
+                        alt="Company Logo" 
+                        className="w-1/2 h-1/2 object-contain pointer-events-none transition-transform duration-75 ease-out" 
+                        style={{
+                          transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})`,
+                        }}
+                      />
+                    ) : (
+                      <div className="text-center p-4">
+                        <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-1 group-hover:text-indigo-500 transition-colors" />
+                        <span className="text-[10px] text-slate-400 font-bold tracking-wider uppercase select-none block group-hover:text-indigo-500 transition-colors">
+                          Company Logo
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="relative z-10 flex flex-col items-end p-8 sm:px-12 pt-40 border-b border-white/10 text-right">
+                  <h3 className="text-3xl sm:text-5xl font-extrabold text-[#f9ed1f] w-[350px]">
                     {jobDetails.jobTitle}
                   </h3>
-                  <div className="mt-5 flex items-center text-indigo-100 gap-3 font-medium text-lg">
+                  <div className="mt-5 flex items-center justify-end text-indigo-100 gap-3 font-medium text-lg">
                     <MapPin className="w-6 h-6 text-orange-400" />
                     {jobDetails.jobLocation}
                   </div>
@@ -256,7 +488,7 @@ Submit Your CV and Resume to ${customEmail}
 
               <div className="relative z-10 p-8 sm:p-12 space-y-12">
                 <section>
-                  <h4 className="flex items-center text-xl font-semibold text-white mb-5 border-b border-white/10 pb-3">
+                  <h4 className="flex items-center text-xl font-semibold text-[#f9ed1f] mb-5 border-b border-white/10 pb-3">
                     <Building2 className="w-6 h-6 mr-3 text-orange-400" />
                     Job Description
                   </h4>
@@ -266,7 +498,7 @@ Submit Your CV and Resume to ${customEmail}
                 </section>
 
                 <section>
-                  <h4 className="flex items-center text-xl font-semibold text-white mb-5 border-b border-white/10 pb-3">
+                  <h4 className="flex items-center text-xl font-semibold text-[#f9ed1f] mb-5 border-b border-white/10 pb-3">
                     <ListChecks className="w-6 h-6 mr-3 text-orange-400" />
                     Key Requirements
                   </h4>

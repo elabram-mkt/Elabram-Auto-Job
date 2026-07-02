@@ -46,7 +46,7 @@ async function startServer() {
         
         scrapedText = $("body").text().replace(/\s+/g, " ").trim();
       } catch (scrapeError: any) {
-        console.error("Scraping failed, falling back to URL-only prompt", scrapeError.message);
+        console.warn("Scraping failed, falling back to URL-only prompt", scrapeError.message);
         // If scraping fails, we still try parsing just via the URL in case the model knows it or we just inform it
       }
 
@@ -62,7 +62,7 @@ If the scraped content is empty or unhelpful, use your knowledge of the URL or d
 Extract the actual accurate job title, job location, job description, and job requirements.
 For the job description, write a compelling, professional overview of the role, the company context (if available), and the core responsibilities. Use rich markdown formatting (like bold text and paragraph breaks) to make it look like a premium job board listing. Return ONLY valid JSON in the structure defined by the schema.`;
 
-      const modelsToTry = ["gemini-2.5-flash", "gemini-3.5-flash", "gemini-3.1-pro-preview", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+      const modelsToTry = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-2.5-flash", "gemini-3.1-pro-preview"];
       let aiResponse;
       let lastError;
 
@@ -91,7 +91,7 @@ For the job description, write a compelling, professional overview of the role, 
           });
           break; // Success, break out of retry loop
         } catch (error: any) {
-          console.error(`Error with model ${currentModel}:`, error.message);
+          console.warn(`Error with model ${currentModel}:`, error.message);
           lastError = error;
           // Wait a bit before trying the next model
           await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -100,7 +100,7 @@ For the job description, write a compelling, professional overview of the role, 
 
       let parsedData;
       if (!aiResponse) {
-        console.error("All models failed. Using fallback mock data due to API overload.", lastError?.message);
+        console.warn("All models failed. Using fallback mock data due to API overload.", lastError?.message);
         parsedData = {
           jobTitle: "Senior Software Engineer (Fallback Mode)",
           jobLocation: "Remote / Global",
