@@ -1,12 +1,17 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
+import next from "next";
 import { GoogleGenAI, Type } from "@google/genai";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import "dotenv/config";
 
+const dev = process.env.NODE_ENV !== "production";
+const nextApp = next({ dev });
+const handle = nextApp.getRequestHandler();
+
 async function startServer() {
+  await nextApp.prepare();
   const app = express();
   const PORT = 3000;
 
@@ -124,21 +129,10 @@ For the job description, write a compelling, professional overview of the role, 
     }
   });
 
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    // Note: express v5 uses '*all' but here package.json shows 'express': '^4.21.2'
-    const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
-  }
+  // Next.js handles all other requests
+  app.all("*", (req, res) => {
+    return handle(req, res);
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
@@ -146,3 +140,4 @@ For the job description, write a compelling, professional overview of the role, 
 }
 
 startServer();
+
