@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useRef } from 'react';
 import { 
   Building2, 
@@ -40,20 +38,20 @@ export default function App() {
   const [jobDetails, setJobDetails] = useState<JobDetails | null>(null);
   const [customEmail, setCustomEmail] = useState('recruitment@elabram.com');
   const [isEditingEmail, setIsEditingEmail] = useState(false);
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
   const posterRef = useRef<HTMLDivElement>(null);
-  const logoInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setLogoUrl(event.target.result as string);
+          setImageUrl(event.target.result as string);
           setScale(1);
           setOffsetX(0);
           setOffsetY(0);
@@ -224,29 +222,29 @@ Submit Your CV and Resume to ${customEmail}
               <div className="flex flex-col sm:flex-row justify-end gap-3 px-2">
                 <input 
                   type="file"
-                  ref={logoInputRef}
+                  ref={imageInputRef}
                   accept="image/*"
-                  onChange={handleLogoUpload}
+                  onChange={handleImageUpload}
                   className="hidden"
                 />
                 <button
-                  onClick={() => logoInputRef.current?.click()}
+                  onClick={() => imageInputRef.current?.click()}
                   className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-sm"
                 >
                   <ImageIcon className="mr-2 h-4 w-4 text-slate-400" />
                   Upload Image
                 </button>
-                {logoUrl && (
+                {imageUrl && (
                   <button
                     onClick={() => {
-                      setLogoUrl(null);
+                      setImageUrl(null);
                       setScale(1);
                       setOffsetX(0);
                       setOffsetY(0);
                     }}
                     className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-xl text-rose-700 bg-white border border-rose-200 hover:bg-rose-50 hover:text-rose-900 focus:outline-none focus:ring-2 focus:ring-rose-500 transition shadow-sm"
                   >
-                    Remove Logo
+                    Remove Image
                   </button>
                 )}
                 <button
@@ -285,7 +283,7 @@ Submit Your CV and Resume to ${customEmail}
               </div>
 
               {/* Image Adjustment Panel */}
-              {logoUrl && (
+              {imageUrl && (
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
@@ -454,25 +452,37 @@ Submit Your CV and Resume to ${customEmail}
                   <div className="absolute inset-0 bg-[#f05323] rounded-full transform translate-x-[18px] translate-y-[-18px] opacity-95"></div>
                   {/* Main White Circle */}
                   <div 
-                    onClick={() => logoInputRef.current?.click()}
+                    onClick={() => imageInputRef.current?.click()}
                     className="absolute inset-[10px] bg-white rounded-full flex items-center justify-center shadow-lg pointer-events-auto cursor-pointer group overflow-hidden"
                     title="Click to upload image"
                   >
-                    {logoUrl ? (
+                    {imageUrl ? (
                       <img 
-                        src={logoUrl} 
-                        alt="Company Logo" 
-                        className="w-1/2 h-1/2 object-contain pointer-events-none transition-transform duration-75 ease-out" 
+                        src={imageUrl} 
+                        alt="Uploaded Space/Image" 
+                        className="w-full h-full object-cover pointer-events-none transition-transform duration-75 ease-out" 
+                        referrerPolicy="no-referrer"
                         style={{
                           transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})`,
                         }}
                       />
                     ) : (
-                      <div className="text-center p-4">
-                        <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-1 group-hover:text-indigo-500 transition-colors" />
-                        <span className="text-[10px] text-slate-400 font-bold tracking-wider uppercase select-none block group-hover:text-indigo-500 transition-colors">
-                          Company Logo
-                        </span>
+                      <div className="text-center p-4 flex flex-col items-center justify-center h-full w-full bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white relative group-hover:from-indigo-950 group-hover:via-slate-900 group-hover:to-slate-950 transition-all duration-500">
+                        {/* Star particles */}
+                        <div className="absolute top-4 left-6 w-1 h-1 bg-white rounded-full opacity-60 animate-pulse" />
+                        <div className="absolute top-10 right-8 w-1.5 h-1.5 bg-indigo-300 rounded-full opacity-40 animate-ping" />
+                        <div className="absolute bottom-6 left-10 w-0.5 h-0.5 bg-white rounded-full opacity-80" />
+                        <div className="absolute bottom-8 right-6 w-1 h-1 bg-violet-400 rounded-full opacity-50 animate-pulse" />
+                        
+                        <div className="relative z-10">
+                          <ImageIcon className="w-8 h-8 text-indigo-300 mx-auto mb-1.5 group-hover:text-white transition-all group-hover:scale-110 duration-300" />
+                          <span className="text-[11px] text-indigo-200 font-extrabold tracking-widest uppercase select-none block group-hover:text-white transition-colors">
+                            Image Space
+                          </span>
+                          <span className="text-[8px] text-indigo-300/70 font-medium tracking-normal select-none block mt-0.5">
+                            Click to Upload
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -488,84 +498,84 @@ Submit Your CV and Resume to ${customEmail}
                   </div>
                 </div>
 
-                <div className="relative z-10 p-8 sm:p-12 space-y-12">
-                  <section>
-                    <h4 className="flex items-center text-xl font-semibold text-[#f9ed1f] mb-5 border-b border-white/10 pb-3">
-                      <Building2 className="w-6 h-6 mr-3 text-orange-400" />
-                      Job Description
-                    </h4>
-                    <div className="prose prose-invert prose-sm sm:prose-base max-w-none text-indigo-100/90 leading-relaxed">
-                      <Markdown>{jobDetails.jobDescription}</Markdown>
-                    </div>
-                  </section>
+              <div className="relative z-10 p-8 sm:p-12 space-y-12">
+                <section>
+                  <h4 className="flex items-center text-xl font-semibold text-[#f9ed1f] mb-5 border-b border-white/10 pb-3">
+                    <Building2 className="w-6 h-6 mr-3 text-orange-400" />
+                    Job Description
+                  </h4>
+                  <div className="prose prose-invert prose-sm sm:prose-base max-w-none text-indigo-100/90 leading-relaxed">
+                    <Markdown>{jobDetails.jobDescription}</Markdown>
+                  </div>
+                </section>
 
-                  <section>
-                    <h4 className="flex items-center text-xl font-semibold text-[#f9ed1f] mb-5 border-b border-white/10 pb-3">
-                      <ListChecks className="w-6 h-6 mr-3 text-orange-400" />
-                      Key Requirements
+                <section>
+                  <h4 className="flex items-center text-xl font-semibold text-[#f9ed1f] mb-5 border-b border-white/10 pb-3">
+                    <ListChecks className="w-6 h-6 mr-3 text-orange-400" />
+                    Key Requirements
+                  </h4>
+                  <ul className="space-y-4">
+                    {jobDetails.jobRequirements.map((req, index) => (
+                      <motion.li
+                        key={index}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-start"
+                      >
+                        <div className="flex-shrink-0 mt-1">
+                          <CheckCircle2 className="h-6 w-6 text-orange-400" />
+                        </div>
+                        <p className="ml-4 text-indigo-100/90 leading-relaxed font-medium">
+                          {req}
+                        </p>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </section>
+
+                <section className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-6 backdrop-blur-sm">
+                  <div className="flex-1 w-full">
+                    <h4 className="text-xl font-semibold text-white mb-2">
+                      Ready to Apply?
                     </h4>
-                    <ul className="space-y-4">
-                      {jobDetails.jobRequirements.map((req, index) => (
-                        <motion.li
-                          key={index}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                          className="flex items-start"
+                    {isEditingEmail ? (
+                      <div className="flex items-center gap-2 mt-3 w-full sm:max-w-md">
+                        <input
+                          type="email"
+                          value={customEmail}
+                          onChange={(e) => setCustomEmail(e.target.value)}
+                          className="flex-1 px-4 py-2 border border-white/20 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white/10 text-white placeholder-indigo-200"
+                          autoFocus
+                          onBlur={() => setIsEditingEmail(false)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') setIsEditingEmail(false);
+                          }}
+                        />
+                        <button
+                          onClick={() => setIsEditingEmail(false)}
+                          className="px-4 py-2 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition"
                         >
-                          <div className="flex-shrink-0 mt-1">
-                            <CheckCircle2 className="h-6 w-6 text-orange-400" />
-                          </div>
-                          <p className="ml-4 text-indigo-100/90 leading-relaxed font-medium">
-                            {req}
-                          </p>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </section>
-
-                  <section className="bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-6 backdrop-blur-sm">
-                    <div className="flex-1 w-full">
-                      <h4 className="text-xl font-semibold text-white mb-2">
-                        Ready to Apply?
-                      </h4>
-                      {isEditingEmail ? (
-                        <div className="flex items-center gap-2 mt-3 w-full sm:max-w-md">
-                          <input
-                            type="email"
-                            value={customEmail}
-                            onChange={(e) => setCustomEmail(e.target.value)}
-                            className="flex-1 px-4 py-2 border border-white/20 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white/10 text-white placeholder-indigo-200"
-                            autoFocus
-                            onBlur={() => setIsEditingEmail(false)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') setIsEditingEmail(false);
-                            }}
-                          />
-                          <button
-                            onClick={() => setIsEditingEmail(false)}
-                            className="px-4 py-2 bg-orange-500 text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition"
-                          >
-                            Save
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center sm:justify-start gap-3 group mt-3">
-                          <p className="text-indigo-100 font-medium text-lg">
-                            Submit Your CV and Resume to <br className="sm:hidden" /><a href={`mailto:${customEmail}`} className="font-bold text-orange-400 underline hover:text-orange-300 transition-colors ml-1">{customEmail}</a>
-                          </p>
-                          <button
-                            onClick={() => setIsEditingEmail(true)}
-                            className="p-2 rounded-lg text-indigo-300 hover:text-white hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                            aria-label="Edit email"
-                          >
-                            <Pencil className="w-5 h-5" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                </div>
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center sm:justify-start gap-3 group mt-3">
+                        <p className="text-indigo-100 font-medium text-lg">
+                          Submit Your CV and Resume to <br className="sm:hidden" /><a href={`mailto:${customEmail}`} className="font-bold text-orange-400 underline hover:text-orange-300 transition-colors ml-1">{customEmail}</a>
+                        </p>
+                        <button
+                          onClick={() => setIsEditingEmail(true)}
+                          className="p-2 rounded-lg text-indigo-300 hover:text-white hover:bg-white/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                          aria-label="Edit email"
+                        >
+                          <Pencil className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              </div>
               </div>
             </motion.div>
           )}
@@ -604,3 +614,4 @@ Submit Your CV and Resume to ${customEmail}
     </div>
   );
 }
+
