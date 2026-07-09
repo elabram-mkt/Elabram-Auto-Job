@@ -8,7 +8,11 @@ import dns from "dns";
 
 // Force Node.js to prefer IPv4 when resolving DNS. 
 // This resolves the common 'fetch failed' (TypeError) issue with global fetch inside virtualized container environments.
-dns.setDefaultResultOrder("ipv4first");
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch (error) {
+  console.warn("Could not set DNS default result order:", error);
+}
 
 const app = express();
 const PORT = 3000;
@@ -121,7 +125,17 @@ For the job description, do NOT write long paragraphs. Instead, format the entir
         ]
       };
     } else {
-      const jsonStr = aiResponse?.text?.trim() || "{}";
+      let jsonStr = aiResponse?.text?.trim() || "{}";
+      // Sanitize potential markdown block wrapping (e.g. ```json ... ```)
+      if (jsonStr.startsWith("```json")) {
+        jsonStr = jsonStr.substring(7);
+      } else if (jsonStr.startsWith("```")) {
+        jsonStr = jsonStr.substring(3);
+      }
+      if (jsonStr.endsWith("```")) {
+        jsonStr = jsonStr.substring(0, jsonStr.length - 3);
+      }
+      jsonStr = jsonStr.trim();
       parsedData = JSON.parse(jsonStr);
     }
 
@@ -132,10 +146,15 @@ For the job description, do NOT write long paragraphs. Instead, format the entir
   }
 });
 
-// Conditionally start local server if not on Vercel
-const isVercel = process.env.VERCEL === "1" || process.env.NOW_BUILDER === "1";
+// Conditionally start local server if NOT in any serverless/lambda environments
+const isServerless = 
+  process.env.VERCEL === "1" || 
+  process.env.NOW_BUILDER === "1" || 
+  process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined || 
+  process.env.NETLIFY !== undefined ||
+  process.env.LAMBDA_TASK_ROOT !== undefined;
 
-if (!isVercel) {
+if (!isServerless) {
   const startLocalServer = async () => {
     // Vite middleware for development
     if (process.env.NODE_ENV !== "production") {

@@ -76,10 +76,17 @@ export default function App() {
         body: JSON.stringify({ url: url.trim() }),
       });
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const textResponse = await response.text();
+        throw new Error(textResponse || `Server returned error code ${response.status}`);
+      }
 
       if (!response.ok || data.error) {
-        throw new Error(data.error || 'Failed to generate job listing.');
+        throw new Error(data?.error || 'Failed to generate job listing.');
       }
 
       setJobDetails(data.data);
