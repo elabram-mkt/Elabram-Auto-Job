@@ -1,3 +1,15 @@
+// Prevent Google GenAI SDK from incorrectly using Google Cloud Application Default Credentials (ADC)
+// inside virtualized or containerized environments (like Cloud Run or Vercel).
+// This prevents a 401 UNAUTHORIZED error ("ACCESS_TOKEN_TYPE_UNSUPPORTED") because the
+// developer Gemini API endpoint strictly requires an API key, not a GCP service account token.
+delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
+delete process.env.GCP_PROJECT;
+delete process.env.GCLOUD_PROJECT;
+delete process.env.GOOGLE_CLOUD_PROJECT;
+delete process.env.K_SERVICE;
+delete process.env.K_REVISION;
+delete process.env.K_CONFIGURATION;
+
 import express from "express";
 import { GoogleGenAI, Type } from "@google/genai";
 import axios from "axios";
